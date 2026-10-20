@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#6d1838">
+<title>Goldenrose Booking Generator</title>
+<style>
+:root{--wine:#6d1838;--rose:#b94f73;--bg:#fff8fa;--ink:#281b20;--muted:#78666d;--line:#eedde3;--card:#fff;--green:#19734a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,#57112b,#8f2b50);color:#fff;padding:22px 16px 18px}
+header h1{font-size:23px;margin:0 0 4px}header p{margin:0;opacity:.9;font-size:13px}
+main{max-width:850px;margin:auto;padding:14px}
+.tabs{display:flex;gap:8px;margin:2px 0 14px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:2}
+.tab{flex:1;border:1px solid var(--line);background:#fff;border-radius:12px;padding:11px 8px;font-weight:700;color:var(--wine)}
+.tab.active{background:var(--wine);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 12px #4c142008}
+h2{font-size:18px;margin:0 0 13px}h3{font-size:15px;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.full{grid-column:1/-1}
+label{font-size:12px;font-weight:750;color:#5e4650}
+input,select,textarea{width:100%;min-width:0;border:1px solid #dfcbd3;border-radius:10px;padding:12px;font:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:75px;resize:vertical}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+button{border:0;border-radius:11px;padding:12px 14px;font:inherit;font-weight:750;cursor:pointer}
+.primary{background:var(--wine);color:#fff}.secondary{background:#f5e6ec;color:var(--wine)}.green{background:#16784b;color:white}.danger{background:#fff0f1;color:#9c1e38}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.metric{background:#fff5f8;border:1px solid var(--line);border-radius:12px;padding:11px}.metric small{display:block;color:var(--muted);font-size:11px}.metric strong{font-size:17px}
+.note{color:var(--muted);font-size:12px;margin:8px 0 0}
+.hidden{display:none!important}
+.searchrow{display:flex;gap:8px;margin-bottom:12px}.searchrow input{flex:1}
+.booking{border:1px solid var(--line);border-radius:12px;padding:13px;margin:9px 0;background:#fff}
+.booking-top{display:flex;justify-content:space-between;gap:10px}.booking-top strong{overflow-wrap:anywhere}.pill{font-size:11px;background:#f7e5ed;color:var(--wine);padding:4px 8px;border-radius:99px;white-space:nowrap}
+.booking p{font-size:13px;color:var(--muted);margin:5px 0}.booking .actions{margin-top:8px}
+.empty{text-align:center;color:var(--muted);padding:24px 8px}
+footer{font-size:11px;color:var(--muted);text-align:center;padding:8px 12px 28px}
+@media(max-width:560px){.grid{grid-template-columns:1fr 1fr}.field.full{grid-column:1/-1}main{padding:10px}.card{padding:13px}.summary{grid-template-columns:repeat(3,1fr)}.metric{padding:9px 7px}.metric strong{font-size:15px}}
+</style>
+</head>
+<body>
+<header><h1>🌹 Goldenrose</h1><p>Booking Generator · Client records · Payment tracking</p></header>
+<main>
+  <div class="tabs">
+    <button class="tab active" id="tabNew" onclick="showTab('new')">＋ New Booking</button>
+    <button class="tab" id="tabSaved" onclick="showTab('saved')">▤ Saved Bookings</button>
+  </div>
+  <section id="newSection">
+    <form class="card" id="bookingForm">
+      <h2 id="formTitle">Booking details</h2>
+      <input type="hidden" id="bookingId">
+      <div class="grid">
+        <div class="field"><label for="client">CLIENT / BOOKING NAME *</label><input id="client" required placeholder="Client name"></div>
+        <div class="field"><label for="mobile">CLIENT MOBILE *</label><input id="mobile" required inputmode="tel" placeholder="91XXXXXXXXXX"></div>
+        <div class="field"><label for="service">SERVICE *</label><select id="service" required><option>Bridal Makeup</option><option>Party Makeup</option><option>Mehndi</option><option>Nail Art</option><option>Makeup + Mehndi</option><option>Other Beauty Service</option></select></div>
+        <div class="field"><label for="artist">ARTIST NAME</label><input id="artist" placeholder="Artist name"></div>
+        <div class="field"><label for="date">BOOKING DATE *</label><input id="date" type="date" required></div>
+        <div class="field"><label for="time">BOOKING TIME *</label><input id="time" type="time" required></div>
+        <div class="field full"><label for="address">FULL ADDRESS *</label><textarea id="address" required placeholder="House / locality / city"></textarea></div>
+        <div class="field"><label for="total">TOTAL AMOUNT (₹) *</label><input id="total" type="number" min="0" step="1" required placeholder="15000"></div>
+        <div class="field"><label for="advance">ADVANCE PAID (₹) *</label><input id="advance" type="number" min="0" step="1" required placeholder="3000"></div>
+      </div>
+      <div class="summary">
+        <div class="metric"><small>Total</small><strong id="sumTotal">₹0</strong></div>
+        <div class="metric"><small>Advance</small><strong id="sumAdvance">₹0</strong></div>
+        <div class="metric"><small>Balance due</small><strong id="sumBalance">₹0</strong></div>
+      </div>
+      <p class="note" id="paymentNote">Booking confirmation message will be generated from these details.</p>
+      <div class="actions">
+        <button class="primary" type="submit" id="saveBtn">Save Booking</button>
+        <button class="secondary" type="button" onclick="previewMessage()">Preview Message</button>
+        <button class="secondary" type="button" onclick="resetForm()">Clear Form</button>
+      </div>
+    </form>
+    <section class="card hidden" id="messageCard">
+      <h2>WhatsApp confirmation message</h2>
+      <textarea id="messageOutput" style="min-height:250px"></textarea>
+      <div class="actions">
+        <button class="primary" onclick="copyMessage()">Copy Message</button>
+        <button class="green" onclick="openWhatsApp()">Open WhatsApp</button>
+      </div>
+      <p class="note">Check the details before sending. WhatsApp opens a chat/message draft; you still press Send yourself.</p>
+    </section>
+  </section>
+  <section id="savedSection" class="hidden">
+    <div class="card">
+      <h2>Saved bookings</h2>
+      <div class="searchrow"><input id="search" placeholder="Search name, phone, service, date…" oninput="renderBookings()"><button class="secondary" onclick="clearSearch()">Clear</button></div>
+      <div id="bookingList"></div>
+      <div class="actions">
+        <button class="secondary" onclick="exportData()">Export backup</button>
+        <button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button>
+        <button class="danger" onclick="clearAll()">Delete all</button>
+        <input type="file" id="importFile" accept="application/json,.json" class="hidden" onchange="importData(event)">
+      </div>
+      <p class="note">Records are saved in this browser on this device. Export a backup regularly; clearing browser data or changing devices may remove records.</p>
+    </div>
+  </section>
+</main>
+<footer>Goldenrose Booking Generator · Your records stay in this browser unless you export/share them.</footer>
+<script>
+const $ = id => document.getElementById(id);
+const STORE='goldenroseBookingsV1';
+let activeWhatsAppId=null;
+function allBookings(){try{return JSON.parse(localStorage.getItem(STORE)||'[]')}catch(e){return []}}
+function saveAll(list){localStorage.setItem(STORE,JSON.stringify(list))}
+function money(n){return '₹'+(Number(n)||0).toLocaleString('en-IN')}
+function balance(){return Math.max(0,(Number($('total').value)||0)-(Number($('advance').value)||0))}
+function updateSummary(){
+  $('sumTotal').textContent=money($('total').value);
+  $('sumAdvance').textContent=money($('advance').value);
+  $('sumBalance').textContent=money(balance());
+  const over=(Number($('advance').value)||0)>(Number($('total').value)||0);
+  $('paymentNote').textContent=over?'Advance is greater than total amount. Please check the payment values.':'Booking confirmation message will be generated from these details.';
+}
+['total','advance'].forEach(id=>$(id).addEventListener('input',updateSummary));
+function showTab(which){
+  $('newSection').classList.toggle('hidden',which!=='new');
+  $('savedSection').classList.toggle('hidden',which!=='saved');
+  $('tabNew').classList.toggle('active',which==='new');
+  $('tabSaved').classList.toggle('active',which==='saved');
+  if(which==='saved')renderBookings();
+}
+function getForm(){
+ return {id:$('bookingId').value||String(Date.now()),client:$('client').value.trim(),mobile:$('mobile').value.trim(),service:$('service').value,artist:$('artist').value.trim(),date:$('date').value,time:$('time').value,address:$('address').value.trim(),total:Number($('total').value)||0,advance:Number($('advance').value)||0,updatedAt:new Date().toISOString()};
+}
+function dateFmt(d){if(!d)return '—';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d}
+function timeFmt(t){if(!t)return '—';let [h,m]=t.split(':').map(Number);let ap=h>=12?'PM':'AM';h=h%12||12;return `${h}:${String(m).padStart(2,'0')} ${ap}`}
+function makeMessage(b){
+ const bal=Math.max(0,(Number(b.total)||0)-(Number(b.advance)||0));
+ return `🌹 *GOLDENROSE – BOOKING CONFIRMED* ✅\n\n👤 *Booking Name:* ${b.client}\n💄 *Service:* ${b.service}\n📅 *Date:* ${dateFmt(b.date)}\n⏰ *Time:* ${timeFmt(b.time)}\n📍 *Address:* ${b.address}\n📞 *Mobile No.:* ${b.mobile}\n👩‍🎨 *Artist Name:* ${b.artist||'To be confirmed'}\n\n💰 *Full Amount:* ${money(b.total)}\n✅ *Advance Paid:* ${money(b.advance)}\n💵 *Balance Due:* ${money(bal)}\n\nThank you for choosing *GOLDENROSE*! 🌹\n_Your Beauty, Our Passion!_`;
+}
+$('bookingForm').addEventListener('submit',e=>{
+ e.preventDefault();const b=getForm();
+ if(b.advance>b.total){if(!confirm('Advance is greater than total amount. Save anyway?'))return}
+ const list=allBookings();const idx=list.findIndex(x=>x.id===b.id);
+ if(idx>=0)list[idx]=b;else list.unshift(b);
+ saveAll(list);activeWhatsAppId=b.id;
+ $('messageOutput').value=makeMessage(b);$('messageCard').classList.remove('hidden');
+ $('formTitle').textContent='Booking saved ✓';$('saveBtn').textContent='Update Booking';
+ alert('Booking saved on this device.');
+});
+function previewMessage(){
+ const b=getForm();
+ if(!b.client||!b.mobile||!b.date||!b.time||!b.address||!$('total').value||$('advance').value===''){alert('Please fill all required fields first.');return}
+ $('messageOutput').value=makeMessage(b);$('messageCard').classList.remove('hidden');activeWhatsAppId=b.id;
+}
+async function copyMessage(){
+ try{await navigator.clipboard.writeText($('messageOutput').value);alert('Message copied. Paste it in WhatsApp.')}
+ catch(e){$('messageOutput').focus();$('messageOutput').select();alert('Select and copy the message, then paste it in WhatsApp.')}
+}
+function openWhatsApp(){
+ const b=getForm();const number=b.mobile.replace(/\D/g,'');
+ if(number.length<10){alert('Please enter a valid client mobile number.');return}
+ const waNumber=number.length===10?'91'+number:number;
+ const msg=$('messageOutput').value||makeMessage(b);
+ window.open('https://wa.me/'+waNumber+'?text='+encodeURIComponent(msg),'_blank');
+}
+function resetForm(){
+ $('bookingForm').reset();$('bookingId').value='';$('formTitle').textContent='Booking details';$('saveBtn').textContent='Save Booking';$('messageCard').classList.add('hidden');updateSummary();
+}
+function editBooking(id){
+ const b=allBookings().find(x=>x.id===id);if(!b)return;
+ $('bookingId').value=b.id;['client','mobile','service','artist','date','time','address','total','advance'].forEach(k=>$(k).value=b[k]??'');
+ $('formTitle').textContent='Edit booking';$('saveBtn').textContent='Update Booking';updateSummary();showTab('new');window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteBooking(id){
+ if(!confirm('Delete this booking? This cannot be undone unless you have a backup.'))return;
+ saveAll(allBookings().filter(x=>x.id!==id));renderBookings();
+}
+function sendBooking(id){
+ const b=allBookings().find(x=>x.id===id);if(!b)return;
+ const number=b.mobile.replace(/\D/g,'');if(number.length<10){alert('Please edit the booking and add a valid mobile number.');return}
+ const waNumber=number.length===10?'91'+number:number;
+ window.open('https://wa.me/'+waNumber+'?text='+encodeURIComponent(makeMessage(b)),'_blank');
+}
+function renderBookings(){
+ const q=($('search').value||'').toLowerCase().trim();const list=allBookings().filter(b=>[b.client,b.mobile,b.service,b.artist,b.date,b.address].join(' ').toLowerCase().includes(q));
+ $('bookingList').innerHTML='';
+ if(!list.length){$('bookingList').innerHTML='<div class="empty">No bookings found. Save your first booking from “New Booking”.</div>';return}
+ list.sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
+ list.forEach(b=>{
+  const el=document.createElement('div');el.className='booking';
+  const bal=Math.max(0,(Number(b.total)||0)-(Number(b.advance)||0));
+  el.innerHTML=`<div class="booking-top"><strong>${esc(b.client||'Unnamed client')}</strong><span class="pill">${esc(b.service||'Service')}</span></div><p>📅 ${dateFmt(b.date)} · ${timeFmt(b.time)} · 📞 ${esc(b.mobile||'—')}</p><p>💰 Total ${money(b.total)} · Advance ${money(b.advance)} · <b>Due ${money(bal)}</b></p><p>📍 ${esc(b.address||'—')}</p><div class="actions"><button class="secondary" data-action="edit">Edit</button><button class="green" data-action="send">WhatsApp</button><button class="danger" data-action="delete">Delete</button></div>`;
+  el.querySelector('[data-action=edit]').onclick=()=>editBooking(b.id);
+  el.querySelector('[data-action=send]').onclick=()=>sendBooking(b.id);
+  el.querySelector('[data-action=delete]').onclick=()=>deleteBooking(b.id);
+  $('bookingList').appendChild(el);
+ });
+}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function clearSearch(){$('search').value='';renderBookings()}
+function exportData(){
+ const blob=new Blob([JSON.stringify(allBookings(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='goldenrose-bookings-backup.json';a.click();URL.revokeObjectURL(a.href);
+}
+function importData(event){
+ const f=event.target.files[0];if(!f)return;const reader=new FileReader();
+ reader.onload=()=>{try{const data=JSON.parse(reader.result);if(!Array.isArray(data))throw Error('Invalid');if(!confirm(`Import ${data.length} bookings? Existing bookings with the same ID will be updated.`))return;const map=new Map(allBookings().map(b=>[b.id,b]));data.forEach(b=>{if(b.id)map.set(b.id,b)});saveAll([...map.values()]);renderBookings();alert('Backup imported.')}catch(e){alert('This backup file is not valid.')}finally{$('importFile').value=''}};
+ reader.readAsText(f);
+}
+function clearAll(){if(!confirm('Delete ALL saved bookings from this browser? Export a backup first if needed.'))return;saveAll([]);renderBookings()}
+updateSummary();
+</script>
+</body>
+</html>
